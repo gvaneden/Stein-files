@@ -14,10 +14,15 @@ pro run_arc_data
 ; set path and date ;
 ; ------------------
 
-start_path = '/Rijnh/Shares/Projects/Pilot/Projects/...'
-date = '2014-08-27/'
-path = start_path + date
-filestore = '/Rijnh/Shares/Projects/Pilot/Projects/...'
+start_path = '/Rijnh/Shares/Projects/Pilot/Measurement Data/Cascaded Arc/'
+year= '2014'
+month='11'
+date = '2014-11-18'
+path = start_path+year+'/'+year+'-'+month+'/'+date+'/'
+
+outputfolder= '11-2014 Sn exposure Pilot/processed data/cascaded arc'
+filestore = '/home/emc/eden/My Documents/a. Projects/'+outputfolder
+
 
 print, '++++++++++++++++++++++++++++'
 print, '+ Start Importing Arc Data +'
@@ -32,6 +37,7 @@ print,'Folder: ',path
 ;       
       if file_search(path) ne '' then begin
         list_files = file_search(path+'*.xls')  ; search all .xls files in folder
+           
         n_files    = size(list_files,/n_elements) 
         for i = 0, n_files-1 do begin
           fname = list_files[i]  

@@ -14,10 +14,14 @@ pro run_pyro_data
 ; ------------------
 ; set path and date ;
 ; ------------------
+;input:
+date = '2014-11-18'
+start_path = '/Rijnh/Shares/Projects/Pilot/Measurement Data/Pyrometer/2014-11-17 Stein/'
+path=start_path+date
+;output:
+outputfolder= '11-2014 Sn exposure Pilot/processed data'
+filestore = '/home/emc/eden/My Documents/a. Projects/'+outputfolder
 
-date = '2014-08-25'
-path = '/Rijnh/Shares/Projects/Pilot/Projects/...'
-filestore = '/Rijnh/Shares/Projects/Pilot/Projects/...'
     
 print, '++++++++++++++++++++++++++++'
 print, '+ Start Importing Pyro Data +'
@@ -31,7 +35,7 @@ print,'Folder: ',path
 ; -------------------------------
 
 if file_search(path) ne '' then begin
-  list_files = file_search(path+'*.log') ; search all .log files in folder
+  list_files = file_search(path+'/'+'*.txt') ; search all .txt files in folder
   n_files    = size(list_files,/n_elements)
   if n_files ne 0 then begin       ; start importing only if the file is non-zero
     
@@ -45,11 +49,12 @@ if file_search(path) ne '' then begin
     tmp_number = tmp_file[n_tmp_file-1]  
     tmp_file2 = strsplit(tmp_number, '.', /extract)
     n_tmp_file2 = n_elements(tmp_file2)
-    number = tmp_file2[n_tmp_file2-2] 
+    shotname = tmp_file2[n_tmp_file2-2] 
+    number = strsplit(shotname,'shot',/extract)
     date = tmp_file[n_tmp_file-2]
     
     ; import the data of the file    
-    data_pyro = import_pyro(fname) 
+    data_pyro = import_pyro_data(fname) 
     
     
     ; save the data of the file

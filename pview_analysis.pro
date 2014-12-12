@@ -1,4 +1,4 @@
-pro pview_analysis,date,num,num2,plot_type,time_corr,time_corr2,gas
+pro pview_analysis,date,num,plot_type,time_corr,time_corr2,time_corr_pyro,gas
 
 ; time_corr = time delay for IR-camera 
 ; time_corr2 = time delay for spectrometer
@@ -36,7 +36,8 @@ print,''
 print,'------------------ Date '+date+' Shot '+num+'------------------'
 print,''
 
-filestore = '/Rijnh/Shares/Projects/Pilot/Projects/Damien Aussems/Experiment Campaign 1/storage/'
+outputfolder= '11-2014 Sn exposure Pilot/processed data'
+filestore = '/home/emc/eden/My Documents/a. Projects/'+outputfolder
 cd, filestore
 
 
@@ -64,7 +65,7 @@ cgLoadCT, 34
 ; Start with cascaded arc data
 ; **************************************************************************************
 
-restore, 'cascaded-arc_'+date+'_exp'+num+'.sav'
+restore, 'cascaded arc/cascaded-arc_'+date+'_exp'+num+'.sav'
 
 ; -------------------------------------------------
 ; get timing values from B-field data 
@@ -88,9 +89,28 @@ time_corr_ex = B_correct_time[0] - alog(total_time_B) ; first (corrected) time v
 
 ; plot time = time 
 cgplot,data.time, data.mag_field, xtitle = 'time (s)',xrange=[time_corr_ex,time_plot],ytitle='B [T]',/addcmd, charsize=ch_sz,color=cgcolor('black')
-xyouts, 0.1*(time_plot-time_corr_ex)+time_corr_ex,1.3*max(data.mag_field),  date+' Exp '+num2+' Shot '+num,color=cgcolor('black')
+xyouts, 0.1*(time_plot-time_corr_ex)+time_corr_ex,1.3*max(data.mag_field),  date+' Shot '+num,color=cgcolor('black')
 
-; -------------------------------------------------
+; plot cathode current:
+;cgplot,data.time, data.cat_cur_1, xtitle = 'time (s)',xrange=[time_corr_ex,time_plot],ytitle='current [A]',/addcmd, charsize=ch_sz,color=cgcolor('black')
+;xyouts, 0.1*(time_plot-time_corr_ex)+time_corr_ex,1.3*max(data.cat_cur_1), '' 
+;cgOplot,data.time, data.cat_cur_2,/addcmd,color='blue'
+;cgOplot,data.time, data.cat_cur_3,/addcmd,color='green'
+
+;plot cathode potential:
+cgplot,data.time, data.cat_pot_1, xtitle = 'time (s)',xrange=[time_corr_ex,time_plot],ytitle='potential [V]',/addcmd, charsize=ch_sz,color=cgcolor('black')
+xyouts, 0.1*(time_plot-time_corr_ex)+time_corr_ex,1.3*max(data.cat_pot_1), '' 
+cgOplot,data.time, data.cat_pot_2,/addcmd,color='blue'
+cgOplot,data.time, data.cat_pot_3,/addcmd,color='green'
+
+;;target voltage
+cgplot,data.time, data.V_target, xtitle = 'time (s)',xrange=[time_corr_ex,time_plot],ytitle='target voltage [V]',/addcmd, charsize=ch_sz,color=cgcolor('black')
+xyouts, 0.1*(time_plot-time_corr_ex)+time_corr_ex,1.3*max(data.V_target), ''
+;
+;cgplot,data.time, data.I_target, xtitle = 'time (s)',xrange=[time_corr_ex,time_plot],ytitle='current [A]',/addcmd, charsize=ch_sz,color=cgcolor('black')
+;xyouts, 0.1*(time_plot-time_corr_ex)+time_corr_ex,1.3*max(data.I_target), ''
+;
+;; -------------------------------------------------
 ; Print average bias and pressure value
 ; -------------------------------------------------
 
@@ -125,10 +145,10 @@ undefine,data
 ; Continue with IR and pyrometer data
 ; **************************************************************************************
 
-IR_case = file_search('IR_'+date+'_exp'+num2+'.sav',/fold_case)
+IR_case = file_search('fastIR_'+date+'_exp'+num+'.sav',/fold_case)
 IR_flag = n_elements(IR_case)
 
-pyro_case = file_search('pyro_'+date+'_exp'+num+'.sav',/fold_case)
+pyro_case = file_search('pyro/pyro_'+date+'_exp'+num+'.sav',/fold_case)
 pyro_flag = n_elements(pyro_case)
   
 if (pyro_flag eq 1 and pyro_case ne '') and (IR_flag eq 1 and IR_case ne '') then case_temp = 1 else begin
@@ -143,8 +163,8 @@ CASE case_temp OF
     
     PRINT,'>>> Both pyro and IR data <<<' 
    
-    restore, 'pyro_'+date+'_exp'+num+'.sav'
-    restore, 'IR_'+date+'_exp'+num2+'.sav'
+    restore, 'pyro/pyro_'+date+'_exp'+num+'.sav'
+    restore, 'fastIR_'+date+'_exp'+num+'.sav'
     
     ; -------------------------------------------------
     ; get timing of the pyrometer from the IR data and B-field data (more accurate than only from B-field)
@@ -153,7 +173,13 @@ CASE case_temp OF
     n_data_pyro_time = n_elements(data_pyro.time)
     delta_pyro_time = data_pyro.time[n_data_pyro_time-1]-data_pyro.time[0]
     
-    timing_IR = ir_time
+    ;slow IR:
+    ;timing_IR = ir_time
+    ;fast IR:
+    ir_temp2 = temp_arr_save
+    timing_IR = time_arr_save
+    ir_time = time_arr_save 
+     
     where_time_IR = where(ir_temp2 ge 0.4*max(ir_temp2))
     IR_correct_time = timing_IR[where_time_IR]
     n_IR_correct_time = n_elements(IR_correct_time)
@@ -161,7 +187,7 @@ CASE case_temp OF
     total_time_IR = last_time_IR - IR_correct_time[0]
       
     
-    pyro_time = data_pyro.time-data_pyro.time[0]+B_correct_time[0]
+    pyro_time = double((data_pyro.time-data_pyro.time[0])+B_correct_time[0])
 
              
   ; -------------------------------------------------
@@ -169,12 +195,16 @@ CASE case_temp OF
   ; -------------------------------------------------
     
     ; plot time = time + offset for IR data
-    cgplot,ir_time+time_corr,ir_temp2,xrange=[time_corr_ex,time_plot],ytitle='T_s [C]',/addcmd, charsize=2, YStyle=4, /nodata,yrange=[0,1.05*max([ir_temp2,data_pyro.temp])]
+    cgplot,ir_time+time_corr,ir_temp2,ytitle='T_s [C]',/addcmd, charsize=2,$
+    YStyle=4, /nodata,yrange=[0,1.05*max([ir_temp2,data_pyro.temp])],$
+    ;YStyle=4, /nodata,yrange=[0,1.05*max([ir_temp2])]
+    xrange=[time_corr_ex,time_plot]
     cgAxis, YAxis=0.0, /Save, ytitle='T_s [C]',/window, charsize=ch_sz
     cgOplot,ir_time+time_corr,ir_temp2,/addcmd,color='blue'
-    cgOplot,pyro_time,data_pyro.temp,/addcmd,color='green'
+    cgOplot,pyro_time+time_corr_pyro,data_pyro.temp,/addcmd,color='green'
     cgAxis, YAxis=1.0,color='red',ytitle='Signal [a.u.]',/Save,/window, charsize=ch_sz,yrange=[0,1.05*max(data_pyro.signal)]
-    cgOplot,pyro_time,data_pyro.signal,xrange=[time_corr_ex,time_plot],color='red',/addcmd
+    
+    cgOplot,pyro_time+time_corr_pyro,data_pyro.signal,xrange=[time_corr_ex,time_plot],color='red',/addcmd
     cglegend,titles=['IR camera', 'Pyrometer'],$; /BACKGROUND, bg_color='white', $; /Box        $
              color=['blue','green'], linestyle=[0,0], Location=[0.75, 0.76],/addcmd, charsize=0.7,VSpace=0.8, Length=0.05
      

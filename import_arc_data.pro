@@ -133,8 +133,14 @@ close, lun
 ; ---------------------------------  
 
 data = create_struct('width',1,'frames',frames,'time',time,$
-  'cat_cur',total([data1,data2,data3]),$
-  'cat_pot',mean([data4,data5,data6]),$
+  'cat_cur_tot',total([data1,data2,data3]),$
+  'cat_pot_mean',mean([data4,data5,data6]),$
+  'cat_cur_1', data1,$
+  'cat_cur_2', data2,$
+  'cat_cur_3', data3,$
+  'cat_pot_1', data4,$
+  'cat_pot_2', data5,$
+  'cat_pot_3', data6,$
   'gas_pv1',data7,$
   'gas_pv4',data8,$
   'gas_pv7',data9,$

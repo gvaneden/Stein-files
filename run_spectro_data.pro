@@ -14,9 +14,13 @@ pro run_spectro_data
 ; set paths and date ;
 ; ------------------
 
-date = '2014-08-26'
-file_path = '/Rijnh/Shares/Projects/Pilot/Projects/... '
-filestore = '/Rijnh/Shares/Projects/Pilot/Projects/...'
+date = '2014-11-17'
+file_path = '/Rijnh/Shares/Projects/Pilot/Measurement Data/Optical Emission Spectroscopy/2014-11/'
+outputfolder= '11-2014 Sn exposure Pilot/processed data/spectro/'
+
+
+filestore = '/home/emc/eden/My Documents/Projects/'+outputfolder
+
 file_pic = filestore+'spectro/' ; this is the folder
 
 ; ------------------
@@ -35,7 +39,8 @@ for j = 0,50 do begin ; 50 is a random heigh number, if you have more folders he
   ; set filedir (this dir contains a list of .ROH/spectrum files of a specific shot)
   ; ------------------
   shot = string(j,format='(i0.0)')
-  filedir = file_path+shot+ '/'
+  ;filedir = file_path+shot+ '/'
+  filedir = file_path+'/'
   result = FILE_TEST(filedir, /DIRECTORY) ; test if this directory is real 
   
   
